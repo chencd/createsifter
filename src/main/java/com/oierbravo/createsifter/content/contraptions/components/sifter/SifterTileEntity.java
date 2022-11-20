@@ -4,6 +4,17 @@ import com.oierbravo.createsifter.ModRecipeTypes;
 import com.simibubi.create.content.contraptions.base.KineticTileEntity;
 import com.simibubi.create.foundation.sound.SoundScapes;
 import com.simibubi.create.foundation.utility.VecHelper;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemTransferable;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -15,51 +26,43 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 
-public class SifterTileEntity extends KineticTileEntity {
+public class SifterTileEntity extends KineticTileEntity implements ItemTransferable {
     public ItemStackHandler inputInv;
     public ItemStackHandler outputInv;
-    public LazyOptional<IItemHandler> capability;
+    public SifterInventoryHandler handler;
     public int timer;
     private SiftingRecipe lastRecipe;
 
     public ItemStackHandler meshInv;
 
-    protected CombinedInvWrapper inputAndMeshCombined ;
+    protected CombinedStorage<ItemVariant, ItemStackHandler> inputAndMeshCombined ;
 
     public SifterTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
         inputInv = new ItemStackHandler(1);
         outputInv = new ItemStackHandler(9);
-        capability = LazyOptional.of(SifterInventoryHandler::new);
+        handler = new SifterInventoryHandler();
         meshInv = new ItemStackHandler(1){
             @Override
-            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-                if(SiftingRecipe.isMeshItemStack(stack)){
+            public boolean isItemValid(int slot, @NotNull ItemVariant stack) {
+                if(SiftingRecipe.isMeshItemStack(stack.toStack())){
                     return true;
                 }
                 return false;
             }
         };
-        inputAndMeshCombined = new CombinedInvWrapper(inputInv,meshInv);
+        inputAndMeshCombined = new CombinedStorage<>(List.of(inputInv,meshInv));
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public void tickAudio() {
         super.tickAudio();
 
@@ -100,7 +103,7 @@ public class SifterTileEntity extends KineticTileEntity {
                 .isEmpty())
             return;
 
-        RecipeWrapper inventoryIn = new RecipeWrapper(inputAndMeshCombined);
+        FabricRecipeWrapper inventoryIn = new FabricRecipeWrapper(inputAndMeshCombined);
         if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
             Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level);
             if (!recipe.isPresent()) {
@@ -117,15 +120,10 @@ public class SifterTileEntity extends KineticTileEntity {
         timer = lastRecipe.getProcessingDuration();
         sendData();
     }
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        capability.invalidate();
-    }
 
     private void process() {
 
-        RecipeWrapper inventoryIn = new RecipeWrapper(inputAndMeshCombined);
+        FabricRecipeWrapper inventoryIn = new FabricRecipeWrapper(inputAndMeshCombined);
 
         if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
             Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level);
@@ -138,7 +136,17 @@ public class SifterTileEntity extends KineticTileEntity {
         stackInSlot.shrink(1);
         inputInv.setStackInSlot(0, stackInSlot);
         lastRecipe.rollResults()
-                .forEach(stack -> ItemHandlerHelper.insertItemStacked(outputInv, stack, false));
+                .forEach(stack -> {
+                    try (Transaction t = TransferUtil.getTransaction()) {
+                        long inserted = outputInv.insert(ItemVariant.of(stack), stack.getCount(), t);
+                        t.commit();
+                        long remainder = stack.getCount() - inserted;
+                        if (remainder == 0)
+                            return;
+                        stack = stack.copy();
+                        stack.setCount((int) remainder);
+                    }
+                });
         sendData();
         setChanged();
     }
@@ -183,11 +191,10 @@ public class SifterTileEntity extends KineticTileEntity {
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (isItemHandlerCap(cap))
-            return capability.cast();
-        return super.getCapability(cap, side);
+    public Storage<ItemVariant> getItemStorage(@Nullable Direction face) {
+        return handler;
     }
+
     private boolean canProcess(ItemStack stack) {
 
         ItemStackHandler tester = new ItemStackHandler(2);
@@ -219,34 +226,21 @@ public class SifterTileEntity extends KineticTileEntity {
         meshInv.setStackInSlot(0, ItemStack.EMPTY);
     }
 
-    private class SifterInventoryHandler extends CombinedInvWrapper {
-
+    private class SifterInventoryHandler extends CombinedStorage<ItemVariant, ItemStackHandler> {
         public SifterInventoryHandler() {
-            super(inputInv, outputInv);
+            super(List.of(inputInv, outputInv));
         }
 
         @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            if (outputInv == getHandlerFromIndex(getIndexForSlot(slot)))
-                return false;
-            return canProcess(stack) && super.isItemValid(slot, stack);
+        public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+            if (!canProcess(resource.toStack((int) maxAmount)))
+                return 0;
+            return inputInv.insert(resource, maxAmount, transaction);
         }
 
         @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (outputInv == getHandlerFromIndex(getIndexForSlot(slot)))
-                return stack;
-            if (!isItemValid(slot, stack))
-                return stack;
-            return super.insertItem(slot, stack, simulate);
+        public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+            return outputInv.extract(resource, maxAmount, transaction);
         }
-
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (inputInv == getHandlerFromIndex(getIndexForSlot(slot)))
-                return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
-        }
-
     }
 }

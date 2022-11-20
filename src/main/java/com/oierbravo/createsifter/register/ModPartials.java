@@ -2,18 +2,7 @@ package com.oierbravo.createsifter.register;
 
 import com.jozufozu.flywheel.core.PartialModel;
 import com.oierbravo.createsifter.CreateSifter;
-import com.simibubi.create.Create;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.tags.ITag;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class ModPartials {
     public static final PartialModel

@@ -7,7 +7,7 @@ import com.simibubi.create.content.contraptions.processing.ProcessingRecipeBuild
 import com.simibubi.create.content.contraptions.processing.ProcessingRecipeSerializer;
 import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
 import com.simibubi.create.foundation.utility.recipe.IRecipeTypeInfo;
-import net.minecraft.data.DataGenerator;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ public abstract class ModProcessingRecipes extends CreateRecipeProvider {
 
     protected static final List<ModProcessingRecipes> PROVIDERS = new ArrayList<>();
 
-    public static void registerAllProcessingProviders(DataGenerator generator) {
+    public static void registerAllProcessingProviders(FabricDataGenerator generator) {
         PROVIDERS.add(new SiftingRecipeGen(generator));
 
         generator.addProvider(new DataProvider() {
@@ -47,7 +47,7 @@ public abstract class ModProcessingRecipes extends CreateRecipeProvider {
     }
 
 
-    public ModProcessingRecipes(DataGenerator generator) {
+    public ModProcessingRecipes(FabricDataGenerator generator) {
         super(generator);
     }
 

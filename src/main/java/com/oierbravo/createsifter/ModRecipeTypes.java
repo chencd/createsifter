@@ -7,18 +7,16 @@ import com.simibubi.create.content.contraptions.processing.ProcessingRecipeSeria
 import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import com.simibubi.create.foundation.utility.recipe.IRecipeTypeInfo;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import io.github.fabricators_of_create.porting_lib.util.ShapedRecipeUtil;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -72,10 +70,10 @@ public enum ModRecipeTypes implements IRecipeTypeInfo {
         };
     }
 
-    public static void register(IEventBus modEventBus) {
-        ShapedRecipe.setCraftingSize(9, 9);
-        Registers.SERIALIZER_REGISTER.register(modEventBus);
-        Registers.TYPE_REGISTER.register(modEventBus);
+    public static void register() {
+        ShapedRecipeUtil.setCraftingSize(9, 9);
+        Registers.SERIALIZER_REGISTER.register();
+        Registers.TYPE_REGISTER.register();
     }
 
     @Override
@@ -113,8 +111,8 @@ public enum ModRecipeTypes implements IRecipeTypeInfo {
     }
 
     private static class Registers {
-        private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, CreateSifter.MODID);
-        private static final DeferredRegister<RecipeType<?>> TYPE_REGISTER = DeferredRegister.create(Registry.RECIPE_TYPE_REGISTRY, CreateSifter.MODID);
+        private static final LazyRegistrar<RecipeSerializer<?>> SERIALIZER_REGISTER = LazyRegistrar.create(Registry.RECIPE_SERIALIZER, CreateSifter.MODID);
+        private static final LazyRegistrar<RecipeType<?>> TYPE_REGISTER = LazyRegistrar.create(Registry.RECIPE_TYPE, CreateSifter.MODID);
     }
 
 }

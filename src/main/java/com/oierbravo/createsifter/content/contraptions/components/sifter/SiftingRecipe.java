@@ -8,13 +8,13 @@ import com.oierbravo.createsifter.register.ModTags;
 import com.simibubi.create.content.contraptions.components.crusher.AbstractCrushingRecipe;
 import com.simibubi.create.content.contraptions.processing.ProcessingOutput;
 import com.simibubi.create.content.contraptions.processing.ProcessingRecipeBuilder.ProcessingRecipeParams;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class SiftingRecipe  extends AbstractCrushingRecipe {
         this.siftableIngredienStack = getSiftableItemStack();
 
     }
-    public boolean matches(RecipeWrapper    inv, Level worldIn) {
+    public boolean matches(RecipeWrapper inv, Level worldIn) {
         if (inv.isEmpty())
             return false;
         return siftableIngredienStack.is(inv.getItem(0).getItem()) &&
@@ -176,8 +176,8 @@ public class SiftingRecipe  extends AbstractCrushingRecipe {
 
         public SifterInv(ItemStack stack, ItemStack mesh) {
             super(new ItemStackHandler(2));
-            inv.setStackInSlot(0, stack);
-            inv.setStackInSlot(1,mesh);
+            handler.setStackInSlot(0, stack);
+            handler.setStackInSlot(1,mesh);
         }
     }
 }

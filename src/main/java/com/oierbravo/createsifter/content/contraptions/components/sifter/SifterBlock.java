@@ -1,14 +1,17 @@
 package com.oierbravo.createsifter.content.contraptions.components.sifter;
 
 import com.oierbravo.createsifter.content.contraptions.components.meshes.BaseMesh;
-import com.oierbravo.createsifter.register.*;
-import com.simibubi.create.AllShapes;
-import com.simibubi.create.AllTileEntities;
+import com.oierbravo.createsifter.register.ModShapes;
+import com.oierbravo.createsifter.register.ModTiles;
 import com.simibubi.create.content.contraptions.base.KineticBlock;
 import com.simibubi.create.content.contraptions.relays.elementary.ICogWheel;
 import com.simibubi.create.foundation.block.ITE;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.utility.Iterate;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -26,11 +29,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.ItemStackHandler;
 
 public class SifterBlock  extends KineticBlock implements ITE<SifterTileEntity>, ICogWheel {
     public SifterBlock(Properties properties) {
@@ -76,7 +74,7 @@ public class SifterBlock  extends KineticBlock implements ITE<SifterTileEntity>,
 
         withTileEntityDo(worldIn, pos, sifter -> {
             boolean emptyOutput = true;
-            IItemHandlerModifiable inv = sifter.outputInv;
+            ItemStackHandler inv = sifter.outputInv;
             for (int slot = 0; slot < inv.getSlots(); slot++) {
                 ItemStack stackInSlot = inv.getStackInSlot(slot);
                 if (!stackInSlot.isEmpty())
@@ -122,17 +120,20 @@ public class SifterBlock  extends KineticBlock implements ITE<SifterTileEntity>,
             return;
 
         ItemEntity itemEntity = (ItemEntity) entityIn;
-        LazyOptional<IItemHandler> capability = sifter.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
-        if (!capability.isPresent())
+        Storage<ItemVariant> handler = TransferUtil.getItemStorage(sifter);
+        if (handler == null)
             return;
 
-        ItemStack remainder = capability.orElse(new ItemStackHandler())
-                .insertItem(0, itemEntity.getItem(), false);
-        if (remainder.isEmpty())
+        ItemStack stack = itemEntity.getItem();
+        long remainder = stack.getCount() - TransferUtil.insertItem(handler, stack);
+        if (remainder <= 0)
             itemEntity.discard();
-        if (remainder.getCount() < itemEntity.getItem()
-                .getCount())
-            itemEntity.setItem(remainder);
+        if (remainder < itemEntity.getItem()
+                .getCount()) {
+            ItemStack cloned = stack.copy();
+            cloned.setCount((int) remainder);
+            itemEntity.setItem(cloned);
+        }
     }
 
     @Override

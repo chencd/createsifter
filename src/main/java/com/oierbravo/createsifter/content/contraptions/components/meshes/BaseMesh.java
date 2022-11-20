@@ -1,11 +1,17 @@
 package com.oierbravo.createsifter.content.contraptions.components.meshes;
 
+import com.oierbravo.createsifter.CreateSifterClient;
 import com.oierbravo.createsifter.content.contraptions.components.sifter.SiftingRecipe;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.CustomUseEffectsItem;
-import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import com.simibubi.create.foundation.mixin.accessor.LivingEntityAccessor;
 import com.simibubi.create.foundation.utility.VecHelper;
+import dev.cafeteria.fakeplayerapi.server.FakeServerPlayer;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
+import io.github.fabricators_of_create.porting_lib.util.ToolAction;
+import io.github.fabricators_of_create.porting_lib.util.ToolActions;
+import net.fabricmc.api.EnvType;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -25,21 +31,17 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.IItemRenderProperties;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
-import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
     protected MeshTypes mesh;
     public BaseMesh(Properties pProperties) {
         super(pProperties);
+        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> {
+            CreateSifterClient.registerItemRenderer(this);
+        });
     }
     public MeshTypes getMesh(){
         return this.mesh;
@@ -63,7 +65,7 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
             ItemStack toSift = item.split(1);
             playerIn.startUsingItem(handIn);
             itemstack.getOrCreateTag()
-                    .put("Sifting", toSift.serializeNBT());
+                    .put("Sifting", NBTSerializer.serializeNBT(toSift));
             playerIn.setItemInHand(otherHand, item);
             return new InteractionResultHolder<>(InteractionResult.SUCCESS, itemstack);
         }
@@ -100,7 +102,7 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
 
         if (!worldIn.isClientSide) {
             itemstack.getOrCreateTag()
-                    .put("Sifting", toSift.serializeNBT());
+                    .put("Sifting", NBTSerializer.serializeNBT(toSift));
             if (item.isEmpty())
                 pickUp.discard();
             else
@@ -131,7 +133,7 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
 
             if (!sifted.isEmpty()) {
                 sifted.forEach(outputStack -> {
-                    if (player instanceof FakePlayer) {
+                    if (player instanceof FakeServerPlayer) {
                         player.drop(outputStack, false, false);
                     } else {
                         player.getInventory()
@@ -213,11 +215,5 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
     @Override
     public int getEnchantmentValue() {
         return 1;
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public void initializeClient(Consumer<IItemRenderProperties> consumer) {
-        consumer.accept(SimpleCustomRenderer.create(this, new MeshItemRenderer()));
     }
 }

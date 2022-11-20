@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "createsifter",
+  "version": "${version}",
+
+  "name": "Create Sifter",
+  "description": "Gather resources sifting",
+  "authors": [
+    "oierbravo",
+    "AlphaMode"
+  ],
+  "contact": {
+    "issues": "https://github.com/AlphaMode/createsifter/issues",
+    "sources": "https://github.com/AlphaMode/createsifter"
+  },
+
+  "license": "MIT",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.oierbravo.createsifter.CreateSifter"
+    ],
+    "client": [
+      "com.oierbravo.createsifter.CreateSifterClient"
+    ],
+    "rei": [
+      "com.oierbravo.createsifter.compat.rei.CreateSifterREI"
+    ],
+    "jei_mod_plugin": [
+      "com.oierbravo.createsifter.compat.jei.CreateSifterJEI"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.14.9",
+    "fabric": ">=0.56.1",
+    "minecraft": ">=1.18.2",
+    "create": "*",
+    "registrate-fabric": "*",
+    "flywheel": "*"
+  }
+}

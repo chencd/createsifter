@@ -5,10 +5,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 import com.simibubi.create.foundation.utility.Color;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 public enum ModGUITextures implements ScreenElement {
     JEI_SHORT_ARROW("jei/widgets", 20, 9);
@@ -39,24 +39,24 @@ public enum ModGUITextures implements ScreenElement {
         this.startY = startY;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public void bind() {
         RenderSystem.setShaderTexture(0, this.location);
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public void render(PoseStack ms, int x, int y) {
         this.bind();
         GuiComponent.blit(ms, x, y, 0, (float)this.startX, (float)this.startY, this.width, this.height, 256, 256);
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public void render(PoseStack ms, int x, int y, GuiComponent component) {
         this.bind();
         component.blit(ms, x, y, this.startX, this.startY, this.width, this.height);
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public void render(PoseStack ms, int x, int y, Color c) {
         this.bind();
         UIRenderHelper.drawColoredTexture(ms, c, x, y, this.startX, this.startY, this.width, this.height);

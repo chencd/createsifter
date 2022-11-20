@@ -8,29 +8,18 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.recipe.Mods;
 import com.simibubi.create.foundation.utility.Lang;
 import com.tterrag.registrate.providers.ProviderType;
+import net.minecraft.core.Registry;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-
-import java.util.Collections;
 
 import static com.oierbravo.createsifter.register.ModTags.NameSpace.MOD;
 
 public class ModTags {
     private static final CreateRegistrate REGISTRATE = CreateSifter.registrate()
             .creativeModeTab(() -> ModGroup.MAIN);
-
-    public static <T extends IForgeRegistryEntry<T>> TagKey<T> optionalTag(IForgeRegistry<T> registry,
-                                                                           ResourceLocation id) {
-        return registry.tags()
-                .createOptionalTagKey(id, Collections.emptySet());
-    }
 
     public enum NameSpace {
 
@@ -73,11 +62,7 @@ public class ModTags {
 
         ModItemTags(NameSpace namespace, String path, boolean optional, boolean alwaysDatagen) {
             ResourceLocation id = new ResourceLocation(namespace.id, path == null ? Lang.asId(name()) : path);
-            if (optional) {
-                tag = optionalTag(ForgeRegistries.ITEMS, id);
-            } else {
-                tag = ItemTags.create(id);
-            }
+            tag = TagKey.create(Registry.ITEM_REGISTRY, id);
             if (alwaysDatagen) {
                 REGISTRATE.addDataGenerator(ProviderType.ITEM_TAGS, prov -> prov.tag(tag));
             }

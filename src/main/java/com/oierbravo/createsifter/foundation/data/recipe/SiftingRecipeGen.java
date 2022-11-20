@@ -6,6 +6,7 @@ import com.oierbravo.createsifter.content.contraptions.components.meshes.MeshTyp
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.contraptions.processing.ProcessingRecipe;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -91,7 +92,7 @@ public class SiftingRecipeGen extends ModProcessingRecipes {
 
 
 
-    public SiftingRecipeGen(DataGenerator generator) {
+    public SiftingRecipeGen(FabricDataGenerator generator) {
         super(generator);
     }
 
