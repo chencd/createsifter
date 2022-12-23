@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +43,8 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
     public ItemStackHandler meshInv;
 
     protected CombinedStorage<ItemVariant, ItemStackHandler> inputAndMeshCombined ;
+
+    protected int totalTime;
 
     public SifterTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -104,13 +107,15 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
             return;
 
         FabricRecipeWrapper inventoryIn = new FabricRecipeWrapper(inputAndMeshCombined);
-        if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
-            Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level);
+        if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level,this.isWaterlogged())) {
+            Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level, this.isWaterlogged());
             if (!recipe.isPresent()) {
                 timer = 100;
+                //totalTime = lastRecipe.getProcessingDuration();
                 sendData();
             } else {
                 lastRecipe = recipe.get();
+                //totalTime = lastRecipe.getProcessingDuration();
                 timer = lastRecipe.getProcessingDuration();
                 sendData();
             }
@@ -118,6 +123,7 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
         }
 
         timer = lastRecipe.getProcessingDuration();
+        //totalTime = lastRecipe.getProcessingDuration();
         sendData();
     }
 
@@ -125,8 +131,8 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
 
         FabricRecipeWrapper inventoryIn = new FabricRecipeWrapper(inputAndMeshCombined);
 
-        if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level)) {
-            Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level);
+        if (lastRecipe == null || !lastRecipe.matches(inventoryIn, level, this.isWaterlogged())) {
+            Optional<SiftingRecipe> recipe = ModRecipeTypes.SIFTING.find(inventoryIn, level,this.isWaterlogged());
             if (!recipe.isPresent())
                 return;
             lastRecipe = recipe.get();
@@ -173,7 +179,7 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
         compound.put("InputInventory", inputInv.serializeNBT());
         compound.put("OutputInventory", outputInv.serializeNBT());
         compound.put("MeshInventory", meshInv.serializeNBT());
-
+        //compound.putInt("TotalTime", totalTime);
         super.write(compound, clientPacket);
     }
 
@@ -183,11 +189,15 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
         inputInv.deserializeNBT(compound.getCompound("InputInventory"));
         outputInv.deserializeNBT(compound.getCompound("OutputInventory"));
         meshInv.deserializeNBT(compound.getCompound("MeshInventory"));
+        //totalTime = compound.getInt("TotalTime");
         super.read(compound, clientPacket);
     }
 
     public int getProcessingSpeed() {
         return Mth.clamp((int) Math.abs(getSpeed() / 16f), 1, 512);
+    }
+    public float getProcessingRemainingPercent() {
+        return (float) ((float) this.timer * 100.0 / (float) totalTime);
     }
 
     @Override
@@ -202,9 +212,9 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
         tester.setStackInSlot(1, this.meshInv.getStackInSlot(0));
         RecipeWrapper inventoryIn = new RecipeWrapper(tester);
 
-        if (lastRecipe != null && lastRecipe.matches(inventoryIn, level))
+        if (lastRecipe != null && lastRecipe.matches(inventoryIn, level,this.isWaterlogged()))
             return true;
-        return ModRecipeTypes.SIFTING.find(inventoryIn, level)
+        return ModRecipeTypes.SIFTING.find(inventoryIn, level,this.isWaterlogged())
                 .isPresent();
     }
 
@@ -225,7 +235,13 @@ public class SifterTileEntity extends KineticTileEntity implements ItemTransfera
         player.getInventory().placeItemBackInInventory(meshInv.getStackInSlot(0));
         meshInv.setStackInSlot(0, ItemStack.EMPTY);
     }
+    public boolean isWaterlogged() {
+        return this.getBlockState().getValue(BlockStateProperties.WATERLOGGED);
+    }
 
+    public ItemStack getInputItemStack(){
+        return this.inputInv.getStackInSlot(0);
+    }
     private class SifterInventoryHandler extends CombinedStorage<ItemVariant, ItemStackHandler> {
         public SifterInventoryHandler() {
             super(List.of(inputInv, outputInv));
