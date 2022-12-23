@@ -1,7 +1,7 @@
 package com.oierbravo.createsifter.compat.rei.category;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.oierbravo.createsifter.compat.jei.category.animations.AnimatedSifter;
+import com.oierbravo.createsifter.compat.rei.category.animations.AnimatedSifter;
 import com.oierbravo.createsifter.content.contraptions.components.sifter.SiftingRecipe;
 import com.oierbravo.createsifter.foundation.gui.ModGUITextures;
 import com.simibubi.create.compat.rei.category.CreateRecipeCategory;
