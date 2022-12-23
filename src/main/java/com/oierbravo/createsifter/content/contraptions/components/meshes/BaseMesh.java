@@ -64,7 +64,7 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
         ItemStack itemInOtherHand = playerIn.getItemInHand(otherHand);
 
         Block blockUnderPlayer = playerIn.getFeetBlockState().getBlock();
-        boolean waterlogged = blockUnderPlayer instanceof LiquidBlock || blockUnderPlayer instanceof IFluidBlock;
+        boolean waterlogged = blockUnderPlayer instanceof LiquidBlock;
 
         if (SiftingRecipe.canHandSift(worldIn, itemInOtherHand,itemstack,waterlogged)) {
             ItemStack item = itemInOtherHand.copy();
@@ -127,7 +127,7 @@ public abstract class BaseMesh extends Item implements CustomUseEffectsItem {
         Player player = (Player) entityLiving;
         CompoundTag tag = stack.getOrCreateTag();
         Block blockUnderPlayer = player.getFeetBlockState().getBlock();
-        boolean waterlogged = blockUnderPlayer instanceof LiquidBlock || blockUnderPlayer instanceof IFluidBlock;
+        boolean waterlogged = blockUnderPlayer instanceof LiquidBlock;
         if (tag.contains("Sifting")) {
             ItemStack toSift = ItemStack.of(tag.getCompound("Sifting"));
             List<ItemStack> sifted =

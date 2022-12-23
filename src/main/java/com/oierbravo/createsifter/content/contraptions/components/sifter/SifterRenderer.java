@@ -9,6 +9,7 @@ import com.simibubi.create.content.contraptions.base.KineticTileEntity;
 import com.simibubi.create.content.contraptions.components.millstone.MillstoneRenderer;
 import com.simibubi.create.content.contraptions.processing.BasinBlock;
 import com.simibubi.create.foundation.render.CachedBufferer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.ItemTransforms;

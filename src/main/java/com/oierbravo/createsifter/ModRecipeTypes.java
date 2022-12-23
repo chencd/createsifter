@@ -7,6 +7,7 @@ import com.simibubi.create.content.contraptions.processing.ProcessingRecipeSeria
 import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import com.simibubi.create.foundation.utility.recipe.IRecipeTypeInfo;
+import io.github.fabricators_of_create.porting_lib.transfer.item.RecipeWrapper;
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
 import io.github.fabricators_of_create.porting_lib.util.ShapedRecipeUtil;
