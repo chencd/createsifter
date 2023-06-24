@@ -97,7 +97,7 @@ dependencies {
     modImplementation("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}")
     modImplementation("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 
-    modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}+${project.minecraft_version}")
+    implementation("com.simibubi.create:create-fabric-1.19.2:0.5.1-b-build.1079+mc1.19.2")
 //    modImplementation("com.tterrag.registrate:Registrate:${project.registrate_version}")
 
 
