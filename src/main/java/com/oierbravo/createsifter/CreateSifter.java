@@ -17,7 +17,7 @@ public class CreateSifter implements ModInitializer {
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger(MODID);
 
-    public static final NonNullSupplier<CreateRegistrate> registrate = CreateRegistrate.lazy(MODID);
+    public static final NonNullSupplier<CreateRegistrate> registrate = CreateRegistrate.create(MODID);
 
     @Override
     public void onInitialize() {
