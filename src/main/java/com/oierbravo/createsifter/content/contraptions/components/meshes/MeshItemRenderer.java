@@ -2,8 +2,8 @@ package com.oierbravo.createsifter.content.contraptions.components.meshes;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
-import com.simibubi.create.content.curiosities.tools.SandPaperItemRenderer;
-import com.simibubi.create.foundation.item.render.CreateCustomRenderedItemModel;
+import com.simibubi.create.content.equipment.sandPaper.SandPaperItemRenderer;
+import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
