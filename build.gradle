@@ -77,7 +77,6 @@ repositories {
     maven { url = "https://maven.cafeteria.dev/releases" }
     maven { url = "https://mvn.devos.one/snapshots/" }
     maven { url = "https://jitpack.io/" }
-
     mavenLocal()
 
 }
@@ -99,7 +98,7 @@ dependencies {
 
     implementation("com.simibubi.create:create-fabric-1.19.2:0.5.1-b-build.1079+mc1.19.2")
 //    modImplementation("com.tterrag.registrate:Registrate:${project.registrate_version}")
-
+    modImplementation(include("io.github.fabricators_of_create.Porting-Lib:transfer:1.19.2"))
 
     modImplementation("dev.latvian.mods:rhino-fabric:${rhino_version}")
     modImplementation("dev.architectury:architectury-fabric:${architectury_version}")
